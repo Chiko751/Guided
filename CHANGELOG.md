@@ -4,6 +4,9 @@
 - **New name:** Guided360 is now **Guided** (new repository). The last Guided360 release (1.37.2) updates to Guided; Guided takes over your settings, custom themes and tab order from Guided360 and then removes Guided360. Its settings folder stays as a backup.
 - **Steam Deck** is the default preset for new installs.
 - **UI sounds** are off by default and are now a choice (*Appearance › Effects & sound › Sounds*: Off / Xbox 360 – more sets to come).
+- **Tab position for every layout:** the bar layouts (pills, dock, sidebar list, rail) put their tabs on any side – top, bottom, left or right (*Appearance › Shapes › Tab position*); stacked cards left or right. With gap 0 pills, list and rail sit inside the window like before, with a gap they float next to it. Vertical tab lists are reached with left/right as before.
+- **Gap to the window** and **tab size** sliders for every layout, NXE blades included.
+- **Liquid Glass is a switch, not a preset:** *Appearance › Colours › Liquid Glass* turns any preset and layout into tinted glass (window, blades, pills, dock, cards), with glass blur and glass opacity. If you used the Liquid Glass preset, you get Modern NXE with the switch on.
 - **What's new?**: after an update to a new major or minor version (1.0 → 1.1, not 1.0.1) a row under *Decky* in the main menu opens a window with the most important changes. It disappears once opened, or with *Dismiss*. New installs don't show it.
 - Everything from Guided360 1.37.1 (Media Player with track lists, 14 presets, 8 layouts …), see below.
 

@@ -1,7 +1,7 @@
 # Guided
 
 **One guide for Steam Game Mode** (SteamOS, Bazzite, …), packaged as a [Decky Loader](https://decky.xyz) plugin.
-Press the Steam button and get one menu for everything: Downloads, Quick settings, your profile/main menu, Performance, Plugins and a Media Player – in the style of Steam Deck (default), Xbox, PlayStation, Nintendo or Steam.
+Press the Steam button and get one menu for everything: Downloads, Quick settings, your profile/main menu, Performance, Plugins and a Media Player – in the style of Steam Deck (default), Xbox, PlayStation, Nintendo or Steam – tabs on any side, optionally as Liquid Glass.
 
 > Guided was called **Guided360** until version 1.37. Guided360 updates itself to Guided and your settings are taken over – see [Coming from Guided360](#coming-from-guided360).
 
@@ -21,8 +21,9 @@ Press the Steam button and get one menu for everything: Downloads, Quick setting
 - **Quick Resume** tab for running apps plus a window switcher on the in-game tab (experimental; works best with the "Pause Games" plugin)
 - **System & Power** view (sleep, restart, shut down, desktop, restart Steam / Guided) and **Update Guided** straight from GitHub
 - **Plugins tab**: Decky plugins inside the Guide (windows grow with their content), buttons for Decky settings and store, and **+** to install a plugin from a ZIP with a file browser right in the Guide
-- **14 presets**: **Steam Deck** (default) and **Steam Deck OLED**; Xbox – **Modern-NXE**, **Classic NXE** (the 2008 guide, curved blades and player ring), **Metro** (2011 dashboard), **Modern NXE Dark**, **Liquid Glass**, **Dynamic** (colours from the running game's artwork); PlayStation – **PS5**, **PS3**; Nintendo – **Switch** light / dark; Steam – **Big Picture**, **2004**. A preset sets colours, shapes, sizes, font and button symbols
-- **8 layouts**: Modern / Classic / Metro blades, tabs on top, dock at the bottom, sidebar left, rail right, stacked cards – with window position (left / centre / right, top / bottom)
+- **13 presets**: **Steam Deck** (default) and **Steam Deck OLED**; Xbox – **Modern-NXE**, **Classic NXE** (the 2008 guide, curved blades and player ring), **Metro** (2011 dashboard), **Modern NXE Dark**, **Dynamic** (colours from the running game's artwork); PlayStation – **PS5**, **PS3**; Nintendo – **Switch** light / dark; Steam – **Big Picture**, **2004**. A preset sets colours, shapes, sizes, font and button symbols
+- **8 layouts**: Modern / Classic / Metro blades, PlayStation-style pills, dock, sidebar list, rail, stacked cards – the bar layouts can put their tabs **on any side** (top, bottom, left, right), stacked cards left or right; **gap to the window** and **tab size** for every layout; window position (left / centre / right, top / bottom)
+- **Liquid Glass** as a switch for every preset and layout: the window and tabs turn into tinted glass, with its own blur and opacity
 - **Fine-tuning**: layout independent of the preset, custom themes (rename, delete), name banner on every page or the main page only, profile picture ring (colours, rainbow), scaling, colours (window colour incl. "Dynamic", window opacity and in-game blur for every style), text and font size, effects, UI sounds (off by default; for now the Xbox 360 set), player ring, glow, button symbols (Xbox / Nintendo / PlayStation, three sizes), hide/reorder tabs, choose the tab for Steam + A, remap buttons – every choice in a dropdown
 - **What's new?**: after a bigger update (1.0 → 1.1) a row under Decky in the main menu explains the most important changes once
 - **Automatic update check** with a Steam notification (can be switched off)
@@ -74,7 +75,7 @@ MIT. The original copyright notice (Michael Palma) is retained as required.
 
 # Deutsch
 
-Guided ist ein Guide-Menü für den Steam Game Mode (Decky-Plugin), basierend auf **Game Glance** von Michael Palma (MIT) – bis Version 1.37 hieß es **Guided360**. Ein Menü für alles: Downloads, Schnelleinstellungen, Hauptmenü, Leistung, Plugins und ein Media Player für Spotify und YouTube Music, der auch bei geschlossenem Guide weiterspielt. 14 Presets im Stil von Steam Deck (Standard), Xbox, PlayStation, Nintendo und Steam, 8 Layouts.
+Guided ist ein Guide-Menü für den Steam Game Mode (Decky-Plugin), basierend auf **Game Glance** von Michael Palma (MIT) – bis Version 1.37 hieß es **Guided360**. Ein Menü für alles: Downloads, Schnelleinstellungen, Hauptmenü, Leistung, Plugins und ein Media Player für Spotify und YouTube Music, der auch bei geschlossenem Guide weiterspielt. 13 Presets im Stil von Steam Deck (Standard), Xbox, PlayStation, Nintendo und Steam, 8 Layouts mit frei wählbarer Tab-Position (oben, unten, links, rechts), Abstand und Tab-Größe, dazu Liquid Glass als Schalter für jedes Preset.
 
 **Installation:** ZIP aus den [Releases](../../releases) laden (`Guided-vX.Y.Z.zip`) und in Decky über Zahnrad → Entwickler → „Plugin aus ZIP installieren“ einspielen. Einstellungen findest du im Guide über das Zahnrad oben links.
 
