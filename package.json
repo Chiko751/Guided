@@ -1,6 +1,6 @@
 {
   "name": "guided",
-  "version": "1.3.0-beta.2",
+  "version": "1.3.0",
   "description": "One guide for Steam Game Mode (Decky plugin)",
   "type": "module",
   "license": "MIT"

@@ -22,7 +22,7 @@ Press the Steam button and get one menu for everything: Downloads, Quick setting
 
 - **Guide menu** with quick settings (brightness, volume, microphone, Wi-Fi, Bluetooth and its devices, airplane mode, night mode, do not disturb, text size) and every option of Steam's Performance menu – each element can be hidden – plus downloads, friends with chat, notifications and user switching
 - **My games** (recent games and library, per-game options – or switch it off to go straight to Steam's library), **Achievements** in NXE style, **Friends** sorted by latest chat, with per-friend actions (message, voice, join, invite, profile, nickname, Remote Play Together, trade …)
-- **Party**: voice chat right from the friends list, a Party row in the main menu during a call, and a Party window with who is speaking, mic, sound, chat, hang up and accepting / declining calls
+- **Party**: voice chat right from the friends list, a Party row in the main menu during a call or when someone calls, and a Party window with who is speaking, mic, sound, chat, hang up and accepting / declining calls – for Steam and (with Steamcord) Discord
 - **Discord via Steamcord (beta)**: if the Decky plugin [Steamcord](https://github.com/Necrosiak/Steamcord) is installed, the switch *Settings › Guided › Adapt Steamcord* adds **Discord friends** (direct messages and group chats: read and write, call, join calls) and **Servers** (join voice channels) as tabs in the Friends window, and a Discord voice chat shows up as **Party** in the main menu (members, who is speaking, mic, sound, invite friends, hang up, accept / decline incoming calls). Guided only talks to Steamcord – nothing of it is bundled, and without Steamcord the option does not appear
 - **Controller window**: controllers, player order, layouts – and editing of button bindings, input styles, activators and mode settings right in the Guide
 - **Media Player** tab in the style of the Xbox 360 media blade: Spotify (the installed app, invisible in the background) or YouTube Music (sign in through Steam's browser) – your libraries, playlists and albums down to single tracks, one player with play/pause, previous, stop, next, shuffle and volume; only one source plays at a time, and music keeps playing while you game
@@ -46,7 +46,7 @@ Press the Steam button and get one menu for everything: Downloads, Quick setting
 3. In Game Mode: Decky → settings (gear) → Developer → *Install plugin from ZIP*.
 4. Restart Steam if the plugin does not appear.
 
-**Updating:** Guided checks for a new release by itself (shortly after start, then every 6 hours) and shows a Steam notification – press it to update. You can also update any time via *Quick settings → System & Power → Update Guided*. The update is installed through Decky (you confirm in Decky).
+**Updating:** Guided checks for a new release by itself (shortly after start, then every 6 hours) and shows a Steam notification – press it to update. Pre-releases are only offered if you already run one. You can also update any time via *Quick settings → System & Power → Update Guided*. The update is installed through Decky (you confirm in Decky).
 
 Settings live in the Guide itself (gear icon at the top left of the Guide).
 
