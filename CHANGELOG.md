@@ -1,5 +1,22 @@
 # Changelog
 
+## 1.2.0
+**Party – voice chat in the Guide**
+- "Voice chat" in the friends list now calls right away – Steam's quick access menu no longer pops up.
+- While a call runs (or a friend calls), a **Party** row appears in the main menu under Friends. It opens the Party window: you and your friend with avatars, who is speaking, the call state (ringing, connecting, connected with duration) and buttons for mic, sound, chat and hang up. Incoming calls can be accepted or declined there.
+- Back from the Party window leads to the friends list again; the window closes by itself when the call ends.
+
+**Buttons**
+- Start, Select, X, Y and "Steam + A" share one list (*Controller & Keyboard › Buttons*): **Steam menu (left)** – Steam's own menu that sits on the Steam button without Guided –, **Steam quick access (QAM, right)**, Steam quick access on its Decky tab (the old "open Steam menu"), every Guided tab and view ("Guided Downloads", "Guided Media Player", pinned plugin tabs, users, notifications, settings), pin plugin and nothing.
+
+**More**
+- New switch under *Guided*: with **"My games" off** the main menu goes straight to Steam's library.
+- Text input always uses Steam's on-screen keyboard; the built-in keyboard is paused until it is more polished.
+- In the friends list and in "My games" up/down keep the column (e.g. stay on the three dots); from a full-width row in Quick settings the cursor lands on the left.
+- Settings are loaded right when the plugin starts: "Steam + A" uses your choice even before the Guide was opened, and a change right after start can no longer overwrite your settings with the defaults.
+
+**What's new?** shows these changes once in the main menu after the update.
+
 ## 1.1.0
 **Fixes**
 - **Controller in the game:** closing the Guide with B on a pinned plugin tab left Steam's side menu open (invisibly), so the game got no controller input until the Guide was opened and closed again (reported in Guided360 issue #1). B now closes the same clean way on every tab.
