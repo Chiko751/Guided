@@ -1,5 +1,25 @@
 # Changelog
 
+## 1.3.17
+**Your Steam profile in the Guide** (*Appearance › Text & icons › Profile*, switch "Steam profile effects", on by default)
+- The **avatar frame** you equipped in the Steam Points Shop sits around the profile picture – animated, like in Steam.
+- **Frame thickness** (100–300 %): the ring grows outwards, its inner edge stays at the picture.
+- **Frame colour**: original, like the banner animation, the running game's colour (as in the Dynamic preset), the accent or a fixed colour – the frame keeps its animation and shading.
+- **Round profile pictures** get a round glowing ring in the frame's colour (Steam frames are square artwork).
+- **Animated avatars** replace the still picture.
+- The (animated) **mini profile background** plays in the name banner behind your name (Modern, Classic and Metro layouts); a still picture with animations off.
+- **Player ring in the banner**: glow colour (same choices) and how many quarters are lit (1–4).
+
+**Classic NXE follows your colours**
+- The selection bar, window and blades now use the accent, window and tab colour – the glossy two-tone bar, the window shading and the curved blades stay.
+
+**Fixes**
+- "Round" profile pictures had no effect in the Classic layout.
+- Friends window: the tab row was squeezed to a few pixels on the Discord tabs.
+- Metro: switched-on toggles were grey, the active Friends / Controller tab had dark text on the accent.
+- Untranslated texts: "No layout" / "Loading…" in the Controller window, "Update Guided" in German.
+- Smoother checks: the Windows overlay watcher no longer runs on Linux.
+
 ## 1.3.5
 - **Steam Input per game** in the Controller window (a game's controller page): a switch "Steam Input for this game" that sets the same option as Steam's game properties, with the note whether it follows Steam's default or is set for this game, and "Reset to Steam default". Like in Steam, with Steam Input off the layouts and button bindings are greyed out and the cursor skips them. Takes effect after the game restarts.
 - The update check only offers releases that contain this build's ZIP – the new Windows build (**Guided Windows**, separate pre-releases tagged `windows-v…`) never reaches Linux installs, and vice versa.
