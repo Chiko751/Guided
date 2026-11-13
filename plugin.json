@@ -1,0 +1,14 @@
+{
+  "name": "Guided",
+  "author": "Guided contributors (based on Game Glance by Michael Palma)",
+  "flags": [],
+  "api_version": 1,
+  "publish": {
+    "tags": [
+      "theme",
+      "menu"
+    ],
+    "description": "One guide for Steam Game Mode: quick menu in the style of Xbox, PlayStation, Nintendo, Steam or Steam Deck with quick settings, performance, downloads, friends & chat, achievements, controller settings, a Media Player (Spotify / YouTube Music) and more. 14 presets (Xbox, PlayStation, Nintendo, Steam, Steam Deck) and 8 layouts.",
+    "image": ""
+  }
+}
