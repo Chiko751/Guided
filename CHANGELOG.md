@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.3.0-beta.2
+**Discord via Steamcord (beta)** – only when the Decky plugin "Steamcord" is installed
+- New switch *Settings › Guided › Adapt Steamcord*. It only appears with Steamcord installed; Guided calls Steamcord's own backend for everything and bundles nothing of it.
+- Friends window tabs with the switch on: **Favorites | Discord friends | Friends | Servers** (LB / RB).
+- **Discord friends**: your Discord direct messages and group chats in Steamcord's order, with status. Open a chat on the right (read and write, B closes it), call, or join a call that is already running.
+- **Servers**: your servers with voice channels; pick a channel and press again to join.
+- **Party** for Discord: while you are in a Discord voice chat, the main menu shows "Party" with a Discord tag. The Party window shows the members, who is speaking and who is muted, plus mic, sound (deafen), invite (sends the voice channel link to a friend), chat (direct calls) and hang up. Incoming Discord calls can be accepted or declined there.
+
+**More**
+- Steamcord and other embedded plugins scroll properly inside the Guide.
+- Pre-releases sort below their release, so the update check offers 1.3.0 to anyone on a 1.3.0 beta.
+
 ## 1.2.0
 **Party – voice chat in the Guide**
 - "Voice chat" in the friends list now calls right away – Steam's quick access menu no longer pops up.
