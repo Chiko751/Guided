@@ -9,6 +9,7 @@ import shutil
 import socket
 import struct
 import subprocess
+import time
 import urllib.request
 
 STEAM_CDP = 8080
@@ -117,7 +118,7 @@ def cdp_eval(port: int, match, expression: str, timeout: float = 10.0):
 # --- Spotify ---------------------------------------------------------------------------------------------------------
 def _user_env() -> dict:
     env = dict(os.environ)
-    uid = os.getuid()
+    uid = os.getuid() if hasattr(os, "getuid") else 0
     env.setdefault("XDG_RUNTIME_DIR", f"/run/user/{uid}")
     env.setdefault("DBUS_SESSION_BUS_ADDRESS", f"unix:path=/run/user/{uid}/bus")
     env.setdefault("DISPLAY", ":0")
@@ -175,7 +176,9 @@ def _spotify_running() -> bool:
 
 
 def _spotify_user() -> str | None:
-    for base in ("~/.var/app/com.spotify.Client/config/spotify/prefs", "~/.config/spotify/prefs"):
+    for base in ("~/.var/app/com.spotify.Client/config/spotify/prefs", "~/.config/spotify/prefs",
+                 os.path.expandvars(r"%APPDATA%\Spotify\prefs"),
+                 os.path.expandvars(r"%LOCALAPPDATA%\Packages\SpotifyAB.SpotifyMusic_zpdnekdrzrea0\LocalState\Spotify\prefs")):
         try:
             with open(os.path.expanduser(base), encoding="utf-8") as f:
                 m = re.search(r'autologin\.canonical_username="([^"]+)"', f.read())
@@ -188,6 +191,8 @@ def _spotify_user() -> str | None:
 
 def spotify_state() -> dict:
     """installed / running / debuggable (playlists readable) plus the current track."""
+    if _WIN:
+        return _win_state()
     cmd = _spotify_cmd()
     state = {"installed": bool(cmd), "running": _spotify_running(), "library": False}
     if not state["running"]:
@@ -217,6 +222,8 @@ def spotify_state() -> dict:
 def spotify_start(restart: bool = False) -> dict:
     """Start Spotify in the background (gamescope keeps Steam focused, so its window stays hidden). With `restart` a
     running Spotify without the debug port is restarted so its playlists become readable."""
+    if _WIN:
+        return _win_start(restart)
     cmd = _spotify_cmd()
     if not cmd:
         return {"ok": False, "error": "not-installed"}
@@ -237,6 +244,8 @@ _PLAYER = (MPRIS, "/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2.Player")
 
 
 def spotify_control(action: str, uri: str = "") -> dict:
+    if _WIN and action not in ("track", "open"):
+        return _win_control(action, uri)
     if action in ("stop", "shuffle", "volume") and not _spotify_running():
         return {"ok": False, "error": "not-running"}
     if action == "stop":  # Spotify's own Stop does nothing visible: pause and rewind
@@ -267,6 +276,8 @@ def spotify_control(action: str, uri: str = "") -> dict:
             uri = _liked_uri()
         if not re.fullmatch(r"spotify:[A-Za-z0-9:._-]+", uri or ""):
             return {"ok": False, "error": "bad-uri"}
+        if _WIN:
+            return {"ok": _sp_eval(_SP_CONTROL_JS + f"('open', {json.dumps(uri)})") == "ok"}
         _busctl("call", MPRIS, "/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2.Player", "OpenUri", "s", uri)
         return {"ok": True}
     if not method:
@@ -398,6 +409,121 @@ def spotify_library() -> list | None:
             item["img"] = "https://i.scdn.co/image/" + m.group(1)
         out.append(item)
     return out
+
+
+# --- Spotify on Windows (1.3.2) ---------------------------------------------------------------------------------------
+# No MPRIS there: Spotify (desktop or Microsoft Store version) is started minimised with its debug port, and everything –
+# state, play/pause, skip, shuffle, volume – goes through its own platform API over CDP, like the library already does.
+_WIN = os.name == "nt"
+_NO_CONSOLE = 0x08000000  # CREATE_NO_WINDOW: no console window flashing up over Big Picture
+
+
+def _win_run(args: list, timeout: float = 6.0):
+    return subprocess.run(args, capture_output=True, text=True, timeout=timeout, creationflags=_NO_CONSOLE)
+
+
+def _win_exe() -> str | None:
+    for c in (os.path.expandvars(r"%APPDATA%\Spotify\Spotify.exe"),
+              os.path.expandvars(r"%LOCALAPPDATA%\Microsoft\WindowsApps\Spotify.exe"),  # Microsoft Store alias
+              shutil.which("spotify")):
+        if c and os.path.exists(c):
+            return c
+    return None
+
+
+def _win_running() -> bool:
+    try:
+        r = _win_run(["tasklist", "/FI", "IMAGENAME eq Spotify.exe", "/NH", "/FO", "CSV"])
+        return '"spotify.exe"' in r.stdout.lower()
+    except Exception:
+        return False
+
+
+_SP_STATE_JS = _SP_PLATFORM_JS + r"""(async () => {
+  if (!gxSp) return null;
+  const st = await gxSp.api('PlayerAPI').getState();
+  const it = st && st.item;
+  let vol = null;
+  try { vol = await gxSp.api('PlaybackAPI').getVolume(); } catch (e) {}
+  const pos = !st ? 0 : st.isPaused ? st.positionAsOfTimestamp : st.positionAsOfTimestamp + (Date.now() - st.timestamp) * (st.speed || 1);
+  const img = (it && ((it.images || [])[0] || ((it.album || {}).images || [])[0])) || {};
+  return JSON.stringify({ status: !it ? 'Stopped' : st.isPaused ? 'Paused' : 'Playing', title: (it && it.name) || '',
+    artist: ((it && it.artists) || []).map(a => a.name).join(', '), album: (it && it.album && it.album.name) || '',
+    art: gxImg(img.url || ''), length: Math.round((st && st.duration) || (it && it.duration && it.duration.milliseconds) || 0),
+    position: Math.max(0, Math.round(pos || 0)), volume: vol == null ? null : Math.round(vol * 100), shuffle: !!(st && st.shuffle) });
+})()"""
+
+_SP_CONTROL_JS = _SP_PLATFORM_JS + r"""(async (a, v) => {
+  if (!gxSp) return 'no-platform';
+  const pl = gxSp.api('PlayerAPI'), pb = gxSp.api('PlaybackAPI');
+  const st = await pl.getState();
+  if (a === 'toggle') await (st && st.isPaused ? pl.resume() : pl.pause());
+  else if (a === 'play') await pl.resume();
+  else if (a === 'pause') await pl.pause();
+  else if (a === 'next') await pl.skipToNext();
+  else if (a === 'prev') await pl.skipToPrevious();
+  else if (a === 'stop') { await pl.pause(); await pl.seekTo(0); }
+  else if (a === 'shuffle') {
+    // Spotify reports the new shuffle state with a delay: remember what we set for a few seconds (quick double presses)
+    const mem = window.__gxShuf, cur = mem && Date.now() - mem.at < 4000 ? mem.v : !!(st && st.shuffle);
+    await pl.setShuffle(!cur);
+    window.__gxShuf = { v: !cur, at: Date.now() };
+    return String(!cur);
+  }
+  else if (a === 'volume') await pb.setVolume(Math.max(0, Math.min(1, v / 100)));
+  else if (a === 'open') await pl.play({ uri: v }, {}, {});
+  else return 'bad-action';
+  return 'ok';
+})"""
+
+
+def _win_state() -> dict:
+    state = {"installed": bool(_win_exe()), "running": _win_running(), "library": False}
+    if not state["running"]:
+        return state
+    try:
+        raw = _sp_eval(_SP_STATE_JS, timeout=4)
+    except Exception:
+        raw = None
+    if raw:  # the debug port answers: library and controls work
+        state["library"] = True
+        state.update({k: v for k, v in json.loads(raw).items() if v is not None})
+    return state
+
+
+def _win_start(restart: bool) -> dict:
+    exe = _win_exe()
+    if not exe:
+        return {"ok": False, "error": "not-installed"}
+    if _win_running():
+        if not restart:
+            return {"ok": True}
+        _win_run(["taskkill", "/IM", "Spotify.exe", "/F"])
+        for _ in range(20):
+            if not _win_running():
+                break
+            time.sleep(0.3)
+    subprocess.Popen([exe, f"--remote-debugging-port={SPOTIFY_CDP}", "--minimized"], stdin=subprocess.DEVNULL,
+                     stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, creationflags=0x00000008 | _NO_CONSOLE)
+    return {"ok": True, "started": True}
+
+
+def _win_control(action: str, uri: str = "") -> dict:
+    if not _win_running():
+        return {"ok": action == "pause", "error": "not-running"}
+    if action == "volume":
+        try:
+            vol = max(0, min(100, int(float(uri))))
+        except ValueError:
+            return {"ok": False, "error": "bad-volume"}
+        r = _sp_eval(_SP_CONTROL_JS + f"('volume', {vol})")
+        return {"ok": r == "ok", "volume": vol}
+    if action not in ("toggle", "play", "pause", "next", "prev", "stop", "shuffle"):
+        return {"ok": False, "error": "bad-action"}
+    r = _sp_eval(_SP_CONTROL_JS + f"({json.dumps(action)}, 0)")
+    if action == "shuffle":
+        return {"ok": r in ("true", "false"), "shuffle": r == "true"}
+    return {"ok": r == "ok", **({} if r == "ok" else {"error": str(r)})}
 
 
 # --- YouTube Music (page lives in the frontend's BrowserView) -------------------------------------------------------

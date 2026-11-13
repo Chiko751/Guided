@@ -2,10 +2,14 @@
 import asyncio
 import json
 import os
-import pwd
 import re
 import stat
 from pathlib import Path
+
+try:  # Unix only; the frost (Gamescope blur) does not exist on Windows
+    import pwd
+except ImportError:
+    pwd = None
 
 from guided.bluetooth import subprocess_env
 from .contracts import identifier, validate_frame
@@ -78,6 +82,8 @@ class FrostService:
                     await asyncio.wait_for(self.process.wait(), 1.5)
                 else:
                     return
+            if pwd is None or os.name == "nt":
+                raise OSError("frost needs a Gamescope session (Linux)")
             env = await asyncio.to_thread(discover_session, self.home)
             account = pwd.getpwuid(Path(self.home).stat().st_uid)
             if os.geteuid() not in (0, account.pw_uid):

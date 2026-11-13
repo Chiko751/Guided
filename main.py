@@ -15,7 +15,7 @@ from guided.store_lookup import RegistryCache, key_for_appid, store_for_appid
 
 DATA_PATH = os.path.join(decky.DECKY_PLUGIN_SETTINGS_DIR, "data.json")
 # Guided 1.0: the plugin was called Guided360 - take its settings over once (before the store is first read)
-OLD_SETTINGS = ("Guided360", "Guided360-Clean")
+OLD_SETTINGS = ("Guided", "Guided360", "Guided360-Clean")  # "Guided": the Windows build takes over a Guided install
 
 
 def _take_over_old_settings():

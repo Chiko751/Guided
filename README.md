@@ -24,7 +24,7 @@ Press the Steam button and get one menu for everything: Downloads, Quick setting
 - **My games** (recent games and library, per-game options – or switch it off to go straight to Steam's library), **Achievements** in NXE style, **Friends** sorted by latest chat, with per-friend actions (message, voice, join, invite, profile, nickname, Remote Play Together, trade …)
 - **Party**: voice chat right from the friends list, a Party row in the main menu during a call or when someone calls, and a Party window with who is speaking, mic, sound, chat, hang up and accepting / declining calls – for Steam and (with Steamcord) Discord
 - **Discord via Steamcord (beta)**: if the Decky plugin [Steamcord](https://github.com/Necrosiak/Steamcord) is installed, the switch *Settings › Guided › Adapt Steamcord* adds **Discord friends** (direct messages and group chats: read and write, call, join calls) and **Servers** (join voice channels) as tabs in the Friends window, and a Discord voice chat shows up as **Party** in the main menu (members, who is speaking, mic, sound, invite friends, hang up, accept / decline incoming calls). Guided only talks to Steamcord – nothing of it is bundled, and without Steamcord the option does not appear
-- **Controller window**: controllers, player order, layouts – and editing of button bindings, input styles, activators and mode settings right in the Guide
+- **Controller window**: controllers, player order, layouts – and editing of button bindings, input styles, activators and mode settings right in the Guide; a per-game **Steam Input** switch (like Steam's game properties)
 - **Media Player** tab in the style of the Xbox 360 media blade: Spotify (the installed app, invisible in the background) or YouTube Music (sign in through Steam's browser) – your libraries, playlists and albums down to single tracks, one player with play/pause, previous, stop, next, shuffle and volume; only one source plays at a time, and music keeps playing while you game
 - **Quick Resume** tab for running apps plus a window switcher on the in-game tab (experimental; works best with the "Pause Games" plugin)
 - **System & Power** view (sleep, restart, shut down, desktop, restart Steam / Guided) and **Update Guided** straight from GitHub
@@ -49,6 +49,18 @@ Press the Steam button and get one menu for everything: Downloads, Quick setting
 **Updating:** Guided checks for a new release by itself (shortly after start, then every 6 hours) and shows a Steam notification – press it to update. Pre-releases are only offered if you already run one. You can also update any time via *Quick settings → System & Power → Update Guided*. The update is installed through Decky (you confirm in Decky).
 
 Settings live in the Guide itself (gear icon at the top left of the Guide).
+
+## Windows (beta)
+
+Decky Loader also runs on Windows. For that there is a separate plugin, **Guided Windows** (`Guided-Windows-vX.Y.Z-beta.N.zip`, published as a pre-release). Install it the same way through Decky. If the Linux "Guided" is installed there, Guided Windows takes over its settings and removes it.
+
+What is different on Windows:
+- In a game, Steam shows its Guide in its own overlay window – Guided follows it there and back to Big Picture.
+- Spotify (desktop or Microsoft Store app) is started minimised and controlled through the app itself; YouTube Music works as on Linux.
+- Not available: Performance tab, Wi-Fi / Bluetooth / airplane / night mode switches, Quick Resume and the window switcher (Steam does not manage game windows on Windows the way Gamescope does). "Switch to desktop" becomes "Exit Big Picture".
+- If the stick still moves the game while the Guide is open, the game reads the controller directly: turn on Steam Input for that game (Controller window → "Steam Input for this game", or Steam's controller settings).
+
+Updates of Guided Windows come only from Windows pre-releases; Linux installs never see them.
 
 ## Coming from Guided360
 

@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.3.5
+- **Steam Input per game** in the Controller window (a game's controller page): a switch "Steam Input for this game" that sets the same option as Steam's game properties, with the note whether it follows Steam's default or is set for this game, and "Reset to Steam default". Like in Steam, with Steam Input off the layouts and button bindings are greyed out and the cursor skips them. Takes effect after the game restarts.
+- The update check only offers releases that contain this build's ZIP – the new Windows build (**Guided Windows**, separate pre-releases tagged `windows-v…`) never reaches Linux installs, and vice versa.
+- The backend also loads where Unix-only modules are missing (preparation for Windows; nothing changes on Linux).
+
 ## 1.3.0
 **Discord via Steamcord** (beta feature) – only when the Decky plugin "Steamcord" is installed
 - New switch *Settings › Guided › Adapt Steamcord*. It only appears with Steamcord installed; Guided calls Steamcord's own backend for everything and bundles nothing of it.
