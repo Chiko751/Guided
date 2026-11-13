@@ -9,8 +9,14 @@ Press the Steam button and get one menu for everything: Downloads, Quick setting
 > Guided is a derivative work: it keeps only the menu and re-skins and extends it. See [Credits](#credits).
 
 <p>
-<img src="docs/image.png" width="32%"> <img src="docs/xbox360-plugins.png" width="32%"> <img src="docs/xbox360-power.png" width="32%">
+<img src="docs/screenshots/01-steamdeck.jpg" width="49%"> <img src="docs/screenshots/03-classic-nxe.jpg" width="49%">
+<img src="docs/screenshots/05-playstation5.jpg" width="49%"> <img src="docs/screenshots/06-switch-dock.jpg" width="49%">
+<img src="docs/screenshots/26-nxe-dark-pink.jpg" width="49%"> <img src="docs/screenshots/04-metro.jpg" width="49%">
+<img src="docs/screenshots/10-liquidglass-deckoled.jpg" width="49%"> <img src="docs/screenshots/24-deckoled-downloads.jpg" width="49%">
+<img src="docs/screenshots/28-ps3-blue.jpg" width="49%"> <img src="docs/screenshots/16-steam2004.jpg" width="49%">
 </p>
+
+<sub>Steam Deck (default) · Classic NXE · PlayStation 5 – quick settings · Switch dock · Modern NXE Dark – Media Player · Metro · Liquid Glass – Deck OLED · Deck OLED – downloads · PlayStation 3 – performance · Steam 2004</sub>
 
 ## Features
 
