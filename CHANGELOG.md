@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.1.0
+**Fixes**
+- **Controller in the game:** closing the Guide with B on a pinned plugin tab left Steam's side menu open (invisibly), so the game got no controller input until the Guide was opened and closed again (reported in Guided360 issue #1). B now closes the same clean way on every tab.
+- **NXE banner:** since 1.0 the active blade (name and player ring) sat behind the window or too far left in Modern NXE, Classic NXE, Metro, Modern NXE Dark and Dynamic. The gap and tab-size sliders no longer override the blades' own sizes or move them onto their own layer.
+- **Liquid Glass:** the two blades next to the window close up flush (no gap to look through), their names are no longer cut off (e.g. the game and Quick Resume blades), all other blades stay where they are without glass; Metro gets light glass with dark text and a light banner.
+- Coming from Guided360: after removing Guided360, Guided reloads itself so the Guide opens right away.
+
+**Faster**
+- Settings: the fixed part of the Guide's CSS (fonts included, ~550 KB) is no longer re-read on every change – dragging a slider costs about 60 % less.
+- Media Player: the Spotify status is read in one call and the Flatpak check is cached – about 88 % less work per second while the tab is open.
+- The "more below" arrow no longer scans the whole window every 300 ms; the active-tab position is set directly instead of through 24 CSS `:has()` rules.
+
+**What's new?** shows these changes once in the main menu after the update.
+
 ## 1.0.0 – Guided360 is now Guided
 - **New name:** Guided360 is now **Guided** (new repository). The last Guided360 release (1.37.2) updates to Guided; Guided takes over your settings, custom themes and tab order from Guided360 and then removes Guided360. Its settings folder stays as a backup.
 - **Steam Deck** is the default preset for new installs.

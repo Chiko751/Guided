@@ -131,12 +131,33 @@ def _busctl(*args: str, timeout: float = 4.0) -> str:
     return r.stdout
 
 
+def _props(*names: str) -> dict:
+    """Several MPRIS properties in one busctl call (one JSON value per line, in order)."""
+    out = _busctl("--json=short", "get-property", MPRIS, "/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2.Player", *names)
+    values = [json.loads(line).get("data") for line in out.splitlines() if line.strip()]
+    return dict(zip(names, values))
+
+
 def _prop(name: str):
     out = _busctl("--json=short", "get-property", MPRIS, "/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2.Player", name)
     return json.loads(out).get("data")
 
 
+_CMD_CACHE: dict = {"at": 0.0, "cmd": None}
+
+
 def _spotify_cmd() -> list | None:
+    """How to start Spotify (Flatpak or a spotify binary). `flatpak info` costs ~25 ms: cached for a minute."""
+    import time
+    now = time.monotonic()
+    if now - _CMD_CACHE["at"] < 60:
+        return _CMD_CACHE["cmd"]
+    _CMD_CACHE["cmd"] = _spotify_cmd_uncached()
+    _CMD_CACHE["at"] = now
+    return _CMD_CACHE["cmd"]
+
+
+def _spotify_cmd_uncached() -> list | None:
     if shutil.which("flatpak"):
         r = subprocess.run(["flatpak", "info", FLATPAK_ID], capture_output=True, timeout=5, env=_user_env())
         if r.returncode == 0:
@@ -173,19 +194,20 @@ def spotify_state() -> dict:
         return state
     state["library"] = _page(SPOTIFY_CDP, lambda t: "xpui" in t.get("url", "")) is not None
     try:
-        md = _prop("Metadata") or {}
+        p = _props("PlaybackStatus", "Metadata", "Position", "Volume", "Shuffle")
+        md = p.get("Metadata") or {}
         get = lambda k: (md.get(k) or {}).get("data")
         artists = get("xesam:artist") or []
         state.update({
-            "status": _prop("PlaybackStatus"),
+            "status": p.get("PlaybackStatus"),
             "title": get("xesam:title") or "",
             "artist": ", ".join(artists) if isinstance(artists, list) else str(artists),
             "album": get("xesam:album") or "",
             "art": get("mpris:artUrl") or "",
             "length": int(get("mpris:length") or 0) // 1000,
-            "position": int(_prop("Position") or 0) // 1000,
-            "volume": round(float(_prop("Volume") or 0) * 100),
-            "shuffle": bool(_prop("Shuffle")),
+            "position": int(p.get("Position") or 0) // 1000,
+            "volume": round(float(p.get("Volume") or 0) * 100),
+            "shuffle": bool(p.get("Shuffle")),
         })
     except Exception:
         pass
