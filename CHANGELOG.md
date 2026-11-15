@@ -1,5 +1,28 @@
 # Changelog
 
+## 1.5.0
+**Setup assistant**
+- New users get a setup assistant the first time they open the Guide. *Quick*: preset, accent color, window background (incl. your Steam mini profile / profile background), window size and position. *Custom*: a base preset, then every appearance page one after another (tabs, window, colors, profile picture, profile banner, text, button and system symbols, effects & sound) and *Fine tuning* at the end. Every choice applies instantly, so the Guide itself is the preview. Start it again any time under *Settings › Appearance › Start setup assistant*.
+
+**New**
+- Achievements: *Sort* (default, recently unlocked, first unlocked, rarest, most common, progress, name) and *Filter* (all, unlocked, locked, in progress, rare under 10 %, secret) – combinable and remembered.
+- Quick Resume (tab and window): X closes the selected game or app after a short confirmation.
+- Window position *Custom*: horizontal and vertical sliders (0–100 %) move the Guide anywhere, right up to the screen edge – independent of resolution and aspect ratio.
+- Quick settings: Wi-Fi and Bluetooth are one row each showing On / Off; the on/off switch now sits in the Wi-Fi / Bluetooth window next to its title (saves space on the page).
+
+**Changes**
+- *Appearance › Shapes* is split into *Tabs* and *Window*.
+- The *Full screen height* switch was removed.
+- With tabs on the left or right, My games, Friends, Achievements and Controller use the full window width – no more empty tab column and divider.
+- The English interface now uses American spelling (color, center, gray …).
+
+**Fixes**
+- The Guide moves above Steam's on-screen keyboard (its top edge is measured), so every key stays visible – also with a custom window position.
+- Close animation: tab icons and labels no longer stay on screen in pill, list, icon and stacked-card layouts.
+- Smoother open / grow animations on full-height presets (e.g. Steam Deck OLED): no stutter and no flash when My games, Friends or Achievements open; the window has its final height from the first frame.
+- Friends / My games with the Steam profile background: the background no longer jumps to the wrong size when the window grows or shrinks; the avatar frame moves with the picture.
+- At a screen edge the Guide no longer shrinks to a tiny size.
+
 ## 1.4.1
 **Fixes**
 - Guide close animation: the blades stayed in place while the window shrank – they now slide back behind the window and fade out with it.
