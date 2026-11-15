@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.4.1
+**Fixes**
+- Guide close animation: the blades stayed in place while the window shrank – they now slide back behind the window and fade out with it.
+- With the window colour "Steam: profile background" / "mini profile background", the background layer froze at a shrunk size for a moment when closing ("hanging" close); it now shrinks and fades exactly with the window, also when opening.
+- The profile picture with a Steam frame, the frame itself and the scroll arrow now fade out with the window instead of staying until the end.
+
 ## 1.4.0
 **Settings per Steam account**
 - Every Steam account on the device keeps its own look, tabs and buttons. Your current settings stay with the account you use now; other accounts start fresh.

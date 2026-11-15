@@ -917,6 +917,9 @@ function prepareMenuPresentation(owner, source2, viewport, onReveal, hold) {
         return hiding;
       root.classList.add("gg-x-closing");
       root.classList.remove("gg-x-shown", "gx-opening");
+      root.querySelectorAll(".gg-menu-panel>*,.gg-menu-hints,.gg-menu-tab,header,.gg-x-avatar,.gg-x-clock,.gg-x-battery-wrap").forEach((el) => {
+        el.style.animation = "";
+      });
       root.__gxCls = /* @__PURE__ */ new Set(["gg-x-closing"]);
       concealed = true;
       if (!root.classList.contains("gg-x-closing") || typeof view.requestAnimationFrame !== "function")
@@ -11756,6 +11759,11 @@ function buildUiCss(ui) {
       const ms = Math.round(GX_ANIM_MS[ui.openAnim][0] * k2);
       css.push(`${H}.gx-opening ${parts}{animation:none!important}${H}.gx-opening{will-change:transform,opacity;animation:${ui.openAnim === "none" ? "none" : `gx-o-${ui.openAnim} ${ms}ms ${ui.openAnim === "pop" ? "ease-out" : "cubic-bezier(.2,.8,.2,1)"} both`}!important}`);
     }
+    const G = "html .gg-menu-native-host .gg-menu.gg-menu.gg-menu";
+    if (ui.openAnim === "guide")
+      css.push(`${G}.gx-opening .gx-pfx-panelbg{animation:gx-panel-open calc(140ms * var(--gx-ak,1)) cubic-bezier(.15,.75,.3,1) both!important}${G}.gx-opening :is(.gg-x-avatar,.gx-avatar-frame,.gx-more){animation:gx-after-panel calc(130ms * var(--gx-ak,1)) ease-out both!important}`);
+    if (close === "guide")
+      css.push(`${G}.gg-x-closing .gx-pfx-panelbg{animation:gx-panel-close calc(150ms * var(--gx-ak,1)) cubic-bezier(.5,0,.75,.4) calc(50ms * var(--gx-ak,1)) both!important}${G}.gg-x-closing :is(.gg-x-avatar,.gx-avatar-frame,.gx-more){animation:gx-out calc(70ms * var(--gx-ak,1)) linear both!important}`);
     if (close !== "guide") {
       const ms = Math.round(GX_ANIM_MS[close][1] * k2);
       css.push(`${H}.gg-x-closing ${parts}{animation:none!important}${H}.gg-x-closing{will-change:transform,opacity;transition:none!important;animation:${close === "none" ? "none" : `gx-c-${close} ${ms}ms ${close === "pop" ? "ease-in" : "cubic-bezier(.5,0,.8,.4)"} both`}!important}`);
@@ -16145,8 +16153,14 @@ function gxProfileFx(element) {
       element.setAttribute("data-gx-pfxbg", "");
     const cs = getComputedStyle(panel), z = parseInt(cs.zIndex, 10);
     const dim = Math.max(0, Math.min(95, Number(uiSettings.get().pfxPanelDim ?? 35))) / 100;
-    const pr = panel.getBoundingClientRect(), mr = (pbg.offsetParent ?? element).getBoundingClientRect(), op = pbg.offsetParent ?? element;
-    const L = pr.left - mr.left - (op.clientLeft || 0), T = pr.top - mr.top - (op.clientTop || 0);
+    const r0 = panel.getBoundingClientRect(), mr = (pbg.offsetParent ?? element).getBoundingClientRect(), op = pbg.offsetParent ?? element;
+    const sc = (e) => {
+      const v = parseFloat(getComputedStyle(e).scale);
+      return Number.isFinite(v) && v > 0.01 ? v : 1;
+    };
+    const sp = sc(panel), sm = sc(element), cx = (r0.left + r0.right) / 2, cy = (r0.top + r0.bottom) / 2;
+    const pr = { width: r0.width / sp / sm, height: r0.height / sp / sm };
+    const L = (cx - mr.left) / sm - pr.width / 2 - (op.clientLeft || 0), T = (cy - mr.top) / sm - pr.height / 2 - (op.clientTop || 0);
     const blur = Math.max(0, Math.min(30, Number(uiSettings.get().pfxPanelBlur) || 0));
     const css = `left:${L.toFixed(2)}px;top:${T.toFixed(2)}px;width:${pr.width.toFixed(2)}px;height:${pr.height.toFixed(2)}px;border-radius:${cs.borderRadius};z-index:${Number.isFinite(z) ? z - 1 : "auto"};--gx-pdim:${dim.toFixed(2)};--gx-pblur:${blur}px;--gx-pscale:${(1 + Math.min(0.25, blur * 4 / Math.max(80, Math.min(pr.width, pr.height)))).toFixed(3)}`;
     if (pbg.style.cssText !== css)
