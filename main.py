@@ -12,6 +12,7 @@ from guided.heroic import HeroicLibrary, heroic_cache_dirs
 from guided.home_errors import FILE_NAME, append_log, start_entry
 from guided.kv import KvStore
 from guided.store_lookup import RegistryCache, key_for_appid, store_for_appid
+from guided import wifi
 
 DATA_PATH = os.path.join(decky.DECKY_PLUGIN_SETTINGS_DIR, "data.json")
 # Guided 1.0: the plugin was called Guided360 - take its settings over once (before the store is first read)
@@ -126,6 +127,28 @@ class Plugin:
             decky.logger.exception("[guided] set_bluetooth_connected failed")
             return False
 
+    async def list_wifi_networks(self, rescan: bool = False):
+        # {"state": on|off|missing, "networks": [{"ssid","signal","secure","connected","known"}]}
+        try:
+            return await asyncio.to_thread(wifi.list_networks, bool(rescan), log=lambda reason: decky.logger.warning(f"[guided] wifi: {reason}"))
+        except Exception:
+            decky.logger.exception("[guided] list_wifi_networks failed")
+            return {"state": "missing", "networks": []}
+
+    async def connect_wifi(self, ssid: str, password: str = ""):
+        try:
+            return await asyncio.to_thread(wifi.connect, str(ssid), str(password) if password else None, log=lambda reason: decky.logger.warning(f"[guided] wifi: {reason}"))
+        except Exception:
+            decky.logger.exception("[guided] connect_wifi failed")
+            return {"ok": False, "reason": "failed"}
+
+    async def disconnect_wifi(self, ssid: str):
+        try:
+            return await asyncio.to_thread(wifi.disconnect, str(ssid), log=lambda reason: decky.logger.warning(f"[guided] wifi: {reason}"))
+        except Exception:
+            decky.logger.exception("[guided] disconnect_wifi failed")
+            return False
+
     async def list_steam_accounts(self):
         # [{"steamId", "account", "persona", "mostRecent"}] from Steam's loginusers.vdf.
         try:
@@ -185,6 +208,20 @@ class Plugin:
             append_log(decky.DECKY_PLUGIN_LOG_DIR, f"v{decky.DECKY_PLUGIN_VERSION} {entry}"[:8000])
         except Exception:
             decky.logger.exception("[guided] log_home_error failed")
+
+    async def make_executable(self, path: str):
+        """'Add a game' (1.3.24): AppImages / scripts / binaries must be executable for Steam to start them. Only regular
+        files below the user's home or /run/media / /mnt (external drives); adds the user's execute bit."""
+        try:
+            real = os.path.realpath(str(path))
+            home = os.path.realpath(decky.DECKY_USER_HOME)
+            if not os.path.isfile(real) or not any(real.startswith(p + os.sep) for p in (home, "/run/media", "/mnt", "/media")):
+                return False
+            mode = os.stat(real).st_mode
+            os.chmod(real, mode | 0o100)
+            return True
+        except OSError:
+            return False
 
     async def takeover_status(self):
         """Old Guided360 may be removed once this plugin has its settings (taken over or its own)."""

@@ -1,5 +1,45 @@
 # Changelog
 
+## 1.4.0
+**Settings per Steam account**
+- Every Steam account on the device keeps its own look, tabs and buttons. Your current settings stay with the account you use now; other accounts start fresh.
+
+**Animations**
+- Open and close animations to choose from: Guide, Steam, fade, pop, zoom, slide left / right / up / down or none – close can mirror the opening. Adjustable speed (*Appearance › Effects & sound*).
+- The background dims together with the window instead of popping in; no more flash at the end of opening or after a mouse click; growing windows (Friends, My games, chat) no longer jump.
+- Faster opening: the large fixed stylesheet is installed once instead of on every press.
+
+**Tabs**
+- Tab styles are named after their look: Blades, Curved blades, Flat blades, Stacked cards, Pills with text, List with text, Icons only, Round icons. New option *Tab labels* (auto / icon / text / both).
+- *Stacked cards* are now browser-style tabs on the window edge, on any side.
+- The tab colour now also colours the icons and labels of pills, lists and icons (before it only affected blades).
+- Arranging tabs (LT + RT): other tabs are greyed out, arrows on the tab, a *Hide* button, vertical tabs move with up / down.
+
+**Appearance**
+- New pages *Profile picture* and *Profile banner* (the banner page only with blade layouts).
+- Profile picture frame in one list: off, **Steam profile picture frame** or a ring in a colour. With the Steam frame: play the frame animation or show it still, frame colour, thickness; the picture stays rounded (round does not fit Steam's square frames).
+- Window colours *Steam: mini profile background* / *Steam: profile background*: your (animated) Steam background behind the window, with sliders to dim and blur it.
+- Separate switches for the frame, the animated avatar and the banner animation.
+- *Full screen height*, windows up to 1800 px wide; header, clock, battery and legend never stick out past the window.
+
+**Quick settings**
+- *Wi-Fi networks*: list, search, connect (with password) and disconnect.
+- Bluetooth window with *Search* and a jump to Steam's Bluetooth settings; paired devices first.
+- *Output device* under volume and *Input device* under microphone.
+
+**More**
+- **Add games**: controller-plus icon at the top → file browser → adds a program as a non-Steam game (on Linux with Proton for Windows programs if you like). Default folders for games and plugin ZIPs under *Settings › Guided*; can be hidden under *System icons*.
+- Downloads and Quick Resume open right in the Guide window; the Quick Resume row only shows with two or more running programs; both rows and the Quick Resume tab can be hidden.
+- X / Y shortcuts only act on the main menu tab – elsewhere they go to the page (plugins can use them).
+
+**Fixes**
+- Sliders in pinned plugins switched the tab on left / right.
+- Volume in quick settings could not be reached with the controller.
+- The on-screen keyboard in chat closed after a second and the window jumped.
+- LB / RB with Steam's chat open switched Guided's tabs.
+- The close animation was invisible.
+- Chat: right from the text field reaches *Send*.
+
 ## 1.3.17
 **Your Steam profile in the Guide** (*Appearance › Text & icons › Profile*, switch "Steam profile effects", on by default)
 - The **avatar frame** you equipped in the Steam Points Shop sits around the profile picture – animated, like in Steam.
