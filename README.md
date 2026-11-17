@@ -62,8 +62,11 @@ Decky Loader also runs on Windows. For that there is a separate plugin, **Guided
 
 What is different on Windows:
 - In a game, Steam shows its Guide in its own overlay window – Guided follows it there and back to Big Picture.
-- Spotify (desktop or Microsoft Store app) is started minimised and controlled through the app itself; YouTube Music works as on Linux.
-- Not available: Performance tab, Wi-Fi / Bluetooth / airplane / night mode switches, Quick Resume and the window switcher (Steam does not manage game windows on Windows the way Gamescope does). "Switch to desktop" becomes "Exit Big Picture".
+- With several games running, Guided always uses the overlay of the game in front.
+- Spotify (desktop or Microsoft Store app) is started minimized and controlled through the app itself; YouTube Music works as on Linux.
+- **Sound:** Steam has no audio controls on Windows, so Guided talks to Windows directly – volume, microphone, and output / input device in quick settings (the device choice sets the Windows default device).
+- **Quick Resume with pausing** (like the "PauseGames" plugin on Linux): switching games through Quick Resume (or Alt+Tab) brings the game to the front and pauses the others – no CPU or GPU use, but they keep their RAM and video memory. A game is only paused once the new one really is in front. Games with kernel anti-cheat (e.g. Easy Anti-Cheat in Halo MCC) cannot be paused and keep running; their tile says so. Switch it off under *Settings › Guided › Pause games in the background*.
+- Not available: Performance tab, Wi-Fi / Bluetooth / airplane / night mode switches and the window switcher. "Switch to desktop" becomes "Exit Big Picture".
 - If the stick still moves the game while the Guide is open, the game reads the controller directly: turn on Steam Input for that game (Controller window → "Steam Input for this game", or Steam's controller settings).
 
 Updates of Guided Windows come only from Windows pre-releases; Linux installs never see them.
