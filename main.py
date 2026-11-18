@@ -13,6 +13,10 @@ from guided.home_errors import FILE_NAME, append_log, start_entry
 from guided.kv import KvStore
 from guided.store_lookup import RegistryCache, key_for_appid, store_for_appid
 from guided import wifi
+from guided import winaudio
+from guided import winpause
+from guided import gamevol
+from guided import discordq
 
 DATA_PATH = os.path.join(decky.DECKY_PLUGIN_SETTINGS_DIR, "data.json")
 # Guided 1.0: the plugin was called Guided360 - take its settings over once (before the store is first read)
@@ -178,6 +182,83 @@ class Plugin:
             decky.logger.exception("[guided] power_action failed")
             return False
 
+    # 1.5.1: Windows audio (Steam on Windows has no SteamClient.System.Audio) - devices with volume, volume, default device
+    async def win_audio_devices(self):
+        try:
+            return await asyncio.to_thread(winaudio.devices)
+        except Exception:
+            decky.logger.exception("[guided] win_audio_devices failed")
+            return {"available": False, "devices": [], "defaultOut": None, "defaultIn": None}
+
+    async def discord_stream_quality(self, resolution: int, fps: int):
+        try:
+            return await asyncio.to_thread(discordq.set_quality, int(resolution), int(fps))
+        except Exception:
+            decky.logger.exception("[guided] discord_stream_quality failed")
+            return {"ok": False}
+
+    async def game_volume(self, app_id: str):
+        try:
+            return await asyncio.to_thread(gamevol.get, str(app_id))
+        except Exception:
+            decky.logger.exception("[guided] game_volume failed")
+            return {"ok": False}
+
+    async def game_volume_set(self, app_id: str, value: int):
+        try:
+            return await asyncio.to_thread(gamevol.set_volume, str(app_id), int(value))
+        except Exception:
+            decky.logger.exception("[guided] game_volume_set failed")
+            return {"ok": False}
+
+    async def win_audio_volume(self, endpoint_id: str, value: float):
+        try:
+            return await asyncio.to_thread(winaudio.set_volume, str(endpoint_id), float(value))
+        except Exception:
+            decky.logger.exception("[guided] win_audio_volume failed")
+            return None
+
+    async def win_audio_default(self, endpoint_id: str):
+        try:
+            return await asyncio.to_thread(winaudio.set_default, str(endpoint_id))
+        except Exception:
+            decky.logger.exception("[guided] win_audio_default failed")
+            return False
+
+    # Guided Windows: pause / resume games (PauseGames for Windows) - NtSuspendProcess on the game's processes
+    async def win_pause(self, appid: int):
+        try:
+            return await asyncio.to_thread(winpause.pause, int(appid))
+        except Exception:
+            decky.logger.exception("[guided] win_pause failed")
+            return {"ok": False, "paused": 0, "failed": 0, "reason": "error"}
+
+    async def win_resume(self, appid: int):
+        try:
+            return await asyncio.to_thread(winpause.resume, int(appid))
+        except Exception:
+            decky.logger.exception("[guided] win_resume failed")
+            return {"ok": False, "resumed": 0}
+
+    async def win_raise(self, appid: int):
+        try:
+            return await asyncio.to_thread(winpause.raise_app, int(appid))
+        except Exception:
+            decky.logger.exception("[guided] win_raise failed")
+            return False
+
+    async def win_is_foreground(self, appid: int):
+        try:
+            return await asyncio.to_thread(winpause.is_foreground, int(appid))
+        except Exception:
+            return None
+
+    async def win_paused(self):
+        try:
+            return winpause.paused()
+        except Exception:
+            return []
+
     async def _media(self, fn, *args):
         try:
             return await asyncio.to_thread(fn, *args)
@@ -193,6 +274,9 @@ class Plugin:
 
     async def media_tracks(self, source: str, uri: str):
         return await self._media(media.spotify_tracks if source == "spotify" else media.yt_tracks, str(uri or ""))
+
+    async def media_search(self, source: str, term: str):
+        return await self._media(media.spotify_search if source == "spotify" else media.yt_search, str(term or ""))
 
     async def media_control(self, source: str, action: str, uri: str = ""):
         fn = media.spotify_control if source == "spotify" else media.yt_control
@@ -236,8 +320,20 @@ class Plugin:
             append_log(decky.DECKY_PLUGIN_LOG_DIR, start_entry(decky.DECKY_PLUGIN_VERSION, now, path))
         except Exception:
             decky.logger.exception("[guided] start-up log entry failed")
+        # Guided Windows: resume games a previous backend left paused (crash, Decky restart)
+        try:
+            winpause.set_state_file(os.path.join(decky.DECKY_PLUGIN_SETTINGS_DIR, "paused-games.json"))
+            n = await asyncio.to_thread(winpause.recover)
+            if n:
+                decky.logger.info(f"[guided] resumed {n} game process(es) left paused")
+        except Exception:
+            decky.logger.exception("[guided] pause recovery failed")
 
     async def _unload(self):
+        try:
+            await asyncio.to_thread(winpause.resume_all)
+        except Exception:
+            decky.logger.exception("[guided] resuming paused games failed")
         if getattr(self, "_frost", None):
             await self._frost.close()
         decky.logger.info("[guided] backend stopped")

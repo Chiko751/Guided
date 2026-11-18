@@ -199,7 +199,7 @@ def spotify_state() -> dict:
         return state
     state["library"] = _page(SPOTIFY_CDP, lambda t: "xpui" in t.get("url", "")) is not None
     try:
-        p = _props("PlaybackStatus", "Metadata", "Position", "Volume", "Shuffle")
+        p = _props("PlaybackStatus", "Metadata", "Position", "Volume", "Shuffle", "LoopStatus")
         md = p.get("Metadata") or {}
         get = lambda k: (md.get(k) or {}).get("data")
         artists = get("xesam:artist") or []
@@ -213,6 +213,7 @@ def spotify_state() -> dict:
             "position": int(p.get("Position") or 0) // 1000,
             "volume": round(float(p.get("Volume") or 0) * 100),
             "shuffle": bool(p.get("Shuffle")),
+            "repeat": {"Playlist": "all", "Track": "one"}.get(str(p.get("LoopStatus") or ""), "none"),
         })
     except Exception:
         pass
@@ -246,12 +247,16 @@ _PLAYER = (MPRIS, "/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2.Player")
 def spotify_control(action: str, uri: str = "") -> dict:
     if _WIN and action not in ("track", "open"):
         return _win_control(action, uri)
-    if action in ("stop", "shuffle", "volume") and not _spotify_running():
+    if action in ("stop", "shuffle", "volume", "repeat") and not _spotify_running():
         return {"ok": False, "error": "not-running"}
     if action == "stop":  # Spotify's own Stop does nothing visible: pause and rewind
         _busctl("call", *_PLAYER, "Pause")
         _busctl("call", *_PLAYER, "Seek", "x", "--", "-100000000000")
         return {"ok": True}
+    if action == "repeat":  # off -> whole list -> this track -> off, like Spotify's own button
+        nxt = {"None": "Playlist", "Playlist": "Track"}.get(str(_prop("LoopStatus") or "None"), "None")
+        _busctl("set-property", *_PLAYER, "LoopStatus", "s", nxt)
+        return {"ok": True, "repeat": {"Playlist": "all", "Track": "one"}.get(nxt, "none")}
     if action == "shuffle":
         on = not bool(_prop("Shuffle"))
         _busctl("set-property", *_PLAYER, "Shuffle", "b", "true" if on else "false")
@@ -342,13 +347,24 @@ _SP_TRACKS_JS = _SP_PLATFORM_JS + r"""(async (uri) => {
   if (!gxSp) return null;
   const row = (t, uid) => ({ uri: t.uri, uid: uid || t.uid || '', name: t.name || '', sub: (t.artists || []).map(a => a.name || a.profile?.name).filter(Boolean).join(', '),
     ms: t.duration?.milliseconds ?? t.duration?.totalMilliseconds ?? 0, img: gxImg(t.album?.images?.[0]?.url) });
+  // 1.5.24: page through (was one call of 400), up to 1000 tracks
+  const pages = async (get) => {
+    const all = [];
+    for (let off = 0; off < 1000; off += 200) {
+      const r = await get(off);
+      const items = r?.items || [];
+      all.push(...items);
+      if (items.length < 200 || (r.totalLength && all.length >= r.totalLength)) break;
+    }
+    return all;
+  };
   if (uri === 'liked') {
-    const r = await gxSp.api('LibraryAPI').getTracks({ limit: 400, offset: 0 });
-    return JSON.stringify((r.items || []).map(t => row(t)));
+    const items = await pages(off => gxSp.api('LibraryAPI').getTracks({ limit: 200, offset: off }));
+    return JSON.stringify(items.map(t => row(t)));
   }
   if (uri.startsWith('spotify:playlist:')) {
-    const r = await gxSp.api('PlaylistAPI').getContents(uri, { limit: 400, offset: 0 });
-    return JSON.stringify((r.items || []).filter(t => t.type === 'track' || t.type === 'episode').map(t => row(t)));
+    const items = await pages(off => gxSp.api('PlaylistAPI').getContents(uri, { limit: 200, offset: off }));
+    return JSON.stringify(items.filter(t => t.type === 'track' || t.type === 'episode').map(t => row(t)));
   }
   if (uri.startsWith('spotify:album:')) {
     let hash = window.__gxAlbumHash;
@@ -359,6 +375,37 @@ _SP_TRACKS_JS = _SP_PLATFORM_JS + r"""(async (uri) => {
   }
   return null;
 })"""
+
+# 1.5.29: song search. Spotify has no search API in its platform: its own GraphQL operation "searchTracks" (persisted
+# hash from its webpack modules; the search page's code loads on first use, so it is opened once in the hidden app and the
+# previous page restored)
+_SP_SEARCH_JS = _SP_PLATFORM_JS + r"""(async (term) => {
+  if (!gxSp) return null;
+  const find = () => { for (const id in window.__webpack_modules__ || {}) { const m = String(window.__webpack_modules__[id]).match(/"searchTracks","query","([0-9a-f]{64})"/); if (m) return m[1]; } return null; };
+  let hash = window.__gxSearchHash || find();
+  if (!hash) {
+    const h = gxSp.p.getHistory(), back = h.location.pathname;
+    h.push('/search');
+    for (let i = 0; i < 30 && !hash; i++) { await new Promise(r => setTimeout(r, 150)); hash = find(); }
+    h.push(back || '/');
+  }
+  if (!hash) return null;
+  window.__gxSearchHash = hash;
+  const r = await gxSp.p.getGraphQLLoader()({ name: 'searchTracks', operation: 'query', sha256Hash: hash, value: null },
+    { searchTerm: term, offset: 0, limit: 30, numberOfTopResults: 5, includeAudiobooks: false, includePreReleases: false, includeAuthors: false });
+  return JSON.stringify((r?.data?.searchV2?.tracksV2?.items || []).map(x => x.item?.data).filter(d => d?.uri).map(d => ({ uri: d.uri, uid: '', name: d.name || '',
+    sub: (d.artists?.items || []).map(a => a.profile?.name).filter(Boolean).join(', '), ms: d.duration?.totalMilliseconds || 0,
+    img: ((d.albumOfTrack?.coverArt?.sources || [])[0] || {}).url || '' })));
+})"""
+
+
+def spotify_search(term: str) -> list | None:
+    term = str(term or "").strip()[:100]
+    if not term:
+        return []
+    raw = _sp_eval(_SP_SEARCH_JS + f"({json.dumps(term)})", 25)
+    return None if raw is None else json.loads(raw)
+
 
 _SP_PLAY_TRACK_JS = _SP_PLATFORM_JS + r"""(async (ctx, uri, uid) => {
   if (!gxSp) return false;
@@ -450,7 +497,8 @@ _SP_STATE_JS = _SP_PLATFORM_JS + r"""(async () => {
   return JSON.stringify({ status: !it ? 'Stopped' : st.isPaused ? 'Paused' : 'Playing', title: (it && it.name) || '',
     artist: ((it && it.artists) || []).map(a => a.name).join(', '), album: (it && it.album && it.album.name) || '',
     art: gxImg(img.url || ''), length: Math.round((st && st.duration) || (it && it.duration && it.duration.milliseconds) || 0),
-    position: Math.max(0, Math.round(pos || 0)), volume: vol == null ? null : Math.round(vol * 100), shuffle: !!(st && st.shuffle) });
+    position: Math.max(0, Math.round(pos || 0)), volume: vol == null ? null : Math.round(vol * 100), shuffle: !!(st && st.shuffle),
+    repeat: ['none', 'all', 'one'][(st && st.repeat) || 0] || 'none' });
 })()"""
 
 _SP_CONTROL_JS = _SP_PLATFORM_JS + r"""(async (a, v) => {
@@ -470,6 +518,7 @@ _SP_CONTROL_JS = _SP_PLATFORM_JS + r"""(async (a, v) => {
     window.__gxShuf = { v: !cur, at: Date.now() };
     return String(!cur);
   }
+  else if (a === 'repeat') { const n = (((st && st.repeat) || 0) + 1) % 3; await pl.setRepeat(n); return ['none', 'all', 'one'][n]; }
   else if (a === 'volume') await pb.setVolume(Math.max(0, Math.min(1, v / 100)));
   else if (a === 'open') await pl.play({ uri: v }, {}, {});
   else return 'bad-action';
@@ -518,9 +567,11 @@ def _win_control(action: str, uri: str = "") -> dict:
             return {"ok": False, "error": "bad-volume"}
         r = _sp_eval(_SP_CONTROL_JS + f"('volume', {vol})")
         return {"ok": r == "ok", "volume": vol}
-    if action not in ("toggle", "play", "pause", "next", "prev", "stop", "shuffle"):
+    if action not in ("toggle", "play", "pause", "next", "prev", "stop", "shuffle", "repeat"):
         return {"ok": False, "error": "bad-action"}
     r = _sp_eval(_SP_CONTROL_JS + f"({json.dumps(action)}, 0)")
+    if action == "repeat":
+        return {"ok": r in ("none", "all", "one"), "repeat": r}
     if action == "shuffle":
         return {"ok": r in ("true", "false"), "shuffle": r == "true"}
     return {"ok": r == "ok", **({} if r == "ok" else {"error": str(r)})}
@@ -577,7 +628,8 @@ _YT_STATE_JS = r"""(() => {
   return JSON.stringify({ logged: !!window.ytcfg?.get?.('LOGGED_IN'), ready: !!window.ytcfg?.get?.('INNERTUBE_CONTEXT') && document.readyState === 'complete', url: location.pathname + location.search,
     status: !v || !m ? 'Stopped' : v.paused ? 'Paused' : 'Playing', title: m?.title || '', artist: m?.artist || '',
     album: m?.album || '', art, volume: document.querySelector('#movie_player')?.isMuted?.() ? 0 : (document.querySelector('#movie_player')?.getVolume?.() ?? 100), position: v ? Math.round(v.currentTime * 1000) : 0,
-    length: v && isFinite(v.duration) ? Math.round(v.duration * 1000) : 0 });
+    length: v && isFinite(v.duration) ? Math.round(v.duration * 1000) : 0,
+    repeat: ({ ALL: 'all', ONE: 'one' })[(document.querySelector('ytmusic-player-bar.ytmusic-app') || document.querySelector('ytmusic-player-bar'))?.getAttribute('repeat-mode')] || 'none' });
 })()"""
 
 _YT_LIBRARY_JS = r"""(async () => {
@@ -617,9 +669,21 @@ _YT_TRACKS_JS = r"""(async (list) => {
     const d = await crypto.subtle.digest('SHA-1', new TextEncoder().encode(ts + ' ' + sap + ' ' + location.origin));
     h.Authorization = 'SAPISIDHASH ' + ts + '_' + [...new Uint8Array(d)].map(b => b.toString(16).padStart(2, '0')).join('');
   }
-  const r = await (await fetch('/youtubei/v1/browse?prettyPrint=false', { method: 'POST', credentials: 'include', headers: h,
-    body: JSON.stringify({ context: ytcfg.get('INNERTUBE_CONTEXT'), browseId: 'VL' + list }) })).json();
+  const call = (body) => fetch('/youtubei/v1/browse?prettyPrint=false', { method: 'POST', credentials: 'include', headers: h,
+    body: JSON.stringify({ context: ytcfg.get('INNERTUBE_CONTEXT'), ...body }) }).then(x => x.json());
   const out = [], seen = new Set();
+  // the next page's token: new responses carry a continuationItemRenderer, older ones nextContinuationData
+  const nextToken = (o) => {
+    let tok = null;
+    const find = (x) => {
+      if (tok || !x || typeof x !== 'object') return;
+      if (x.continuationItemRenderer) { tok = x.continuationItemRenderer.continuationEndpoint?.continuationCommand?.token || null; return; }
+      if (x.nextContinuationData?.continuation) { tok = x.nextContinuationData.continuation; return; }
+      for (const k in x) find(x[k]);
+    };
+    find(o);
+    return tok;
+  };
   const text = (c) => (c?.musicResponsiveListItemFlexColumnRenderer?.text?.runs || []).map(x => x.text).join('');
   const walk = (o) => {
     if (!o || typeof o !== 'object') return;
@@ -635,15 +699,39 @@ _YT_TRACKS_JS = r"""(async (list) => {
     }
     for (const k in o) walk(o[k]);
   };
-  walk(r);
-  return JSON.stringify(out.slice(0, 300));
+  // 1.5.24: all pages (a 184-song playlist showed only the first ~100), up to 1000 tracks
+  let r = await call({ browseId: 'VL' + list });
+  for (let page = 0; r && page < 20; page++) {
+    const before = out.length;
+    walk(r);
+    const tok = out.length < 1000 && out.length > before ? nextToken(r) : null;
+    if (!tok) break;
+    r = await call({ continuation: tok });
+  }
+  return JSON.stringify(out.slice(0, 1000));
 })"""
+
+
+# 1.5.29: YT Music song search (innertube search, "Songs" filter; the same item format as playlist tracks)
+_YT_SEARCH_JS = _YT_TRACKS_JS.split("  // 1.5.24: all pages")[0].replace("(async (list) => {", "(async (term) => {").replace("/youtubei/v1/browse?", "/youtubei/v1/search?") + r"""  let r = await call({ query: term, params: 'EgWKAQIIAWoKEAkQBRAKEAMQBA%3D%3D' });
+  walk(r);
+  if (!out.length) { r = await call({ query: term }); walk(r); }
+  return JSON.stringify(out.slice(0, 30));
+})"""
+
+
+def yt_search(term: str) -> list | None:
+    term = str(term or "").strip()[:100]
+    if not term:
+        return []
+    raw = cdp_eval(STEAM_CDP, _yt_ours(), _YT_SEARCH_JS + f"({json.dumps(term)})", 20)
+    return None if raw is None else json.loads(raw)
 
 
 def yt_tracks(list_id: str) -> list | None:
     if not re.fullmatch(r"[A-Za-z0-9_-]{2,80}", list_id or ""):
         return None
-    raw = cdp_eval(STEAM_CDP, _yt_ours(), _YT_TRACKS_JS + f"({json.dumps(list_id)})", 15)
+    raw = cdp_eval(STEAM_CDP, _yt_ours(), _YT_TRACKS_JS + f"({json.dumps(list_id)})", 40)
     return None if raw is None else json.loads(raw)
 
 
@@ -686,7 +774,11 @@ def yt_library():
 
 
 def yt_control(action: str, uri: str = "") -> dict:
-    if action == "track":
+    if action == "video":
+        if not re.fullmatch(r"[A-Za-z0-9_-]{6,20}", uri or ""):
+            return {"ok": False, "error": "bad-id"}
+        action, target = "open", f"watch?v={uri}"
+    elif action == "track":
         list_id, vid = (uri.split("\n") + ["", ""])[:2]
         if not re.fullmatch(r"[A-Za-z0-9_-]{2,80}", list_id) or not re.fullmatch(r"[A-Za-z0-9_-]{6,20}", vid):
             return {"ok": False, "error": "bad-id"}
@@ -723,9 +815,10 @@ def yt_control(action: str, uri: str = "") -> dict:
     elif action == "pause":
         js = "(() => { const v = document.querySelector('video'); if (v && !v.paused) v.pause(); return true; })()"
     else:
-        sel = {"toggle": ".play-pause-button", "next": ".next-button", "prev": ".previous-button", "shuffle": ".shuffle"}.get(action)
+        sel = {"toggle": ".play-pause-button", "next": ".next-button", "prev": ".previous-button", "shuffle": ".shuffle", "repeat": ".repeat"}.get(action)
         if not sel:
             return {"ok": False, "error": "bad-action"}
-        js = f"(() => {{ const b = document.querySelector('ytmusic-player-bar {sel}'); if (!b) return false; b.click(); return true; }})()"
+        js = (f"(() => {{ const b = document.querySelector('ytmusic-player-bar.ytmusic-app {sel}') || document.querySelector('ytmusic-player-bar {sel}'); "
+              "if (!b) return false; b.click(); return true; })()")
     ok = cdp_eval(STEAM_CDP, _yt_ours(), js)
     return {"ok": bool(ok)}

@@ -1,5 +1,32 @@
 # Changelog
 
+## 1.6.0
+**XMB (PS3 preset)**
+- Rebuilt after the original PS3 XMB: categories in one row with the content as a list under the chosen category; submenus (Wi-Fi, Bluetooth, settings, media library, party …), My games, Friends and Achievements open as a sub-list to the right; the in-game tab, achievements (as a trophy list) and notifications (a drop-down under the clock) follow the look; the button legend sits in the bottom right corner.
+- Checkboxes instead of switches and content as a list – both are settings for every preset.
+
+**New**
+- *Status bar* for every preset (*Text & icons › System icons*): profile picture, gear, add game, notifications, battery and clock in one frame at the top right; notifications drop down below it. Optional background: your Steam mini profile or profile background.
+- Discord screen sharing through Steamcord: watch a screen share in the Guide, in full screen or as picture-in-picture over the game (LT / RT size, stick position); share your own screen; *Stream quality* while you share (sets Discord's own Go Live quality, up to 1080p 60 fps).
+- Calls: participants as a compact list; all buttons in one row (down reaches a wrapped row); *Chat* opens the chat of the call.
+- Media Player: search for songs (Spotify and YouTube Music), repeat (all / one song).
+- In-game tab: volume of the running game only (Linux; also for games whose audio stream carries no process id).
+- One palette of 26 colors for every color choice, sorted the same way everywhere; the text color also tints the content icons; tab icon size; bold text for every font; more text colors.
+- Presets remember tab position, switch style and list setting; own themes keep changes to them without saving again.
+
+**Changes**
+- *Content as a list* and *Switch style* moved from *Window* to *Text › Content*.
+- Guided's settings pages use one text size for every row.
+- Help: updated menu names, new topic *Friends and party*.
+
+**Fixes**
+- YouTube Music and Spotify playlists load completely (only the first ~100 / 400 songs before).
+- B in a chat closes only the chat and goes back to the friend.
+- Steam keyboard: the home screen behind the Guide no longer slides up.
+- Achievements: Steam's request can hang – after 15 s the Guide says so instead of loading forever.
+- The tab color now applies to every tab in the XMB look.
+- Much lower CPU use while the Guide is open (no style recalculations every 200 ms).
+
 ## 1.5.0
 **Setup assistant**
 - New users get a setup assistant the first time they open the Guide. *Quick*: preset, accent color, window background (incl. your Steam mini profile / profile background), window size and position. *Custom*: a base preset, then every appearance page one after another (tabs, window, colors, profile picture, profile banner, text, button and system symbols, effects & sound) and *Fine tuning* at the end. Every choice applies instantly, so the Guide itself is the preview. Start it again any time under *Settings › Appearance › Start setup assistant*.

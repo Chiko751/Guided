@@ -28,3 +28,18 @@ The Classic NXE style and the default font embed a Latin subset of Nunito (The N
 https://github.com/googlefonts/nunito), licensed under the SIL Open Font License 1.1 (https://openfontlicense.org).
 Files from @fontsource/nunito 5.0.18.
 
+
+## M PLUS Rounded 1c, Source Sans 3, Selawik, Zen Maru Gothic
+
+Since 1.5.10 the menu embeds Latin subsets (Regular, Medium/Semibold, Bold) of these fonts as free look-alikes of the
+consoles' system fonts. All are licensed under the SIL Open Font License 1.1 (https://openfontlicense.org); the full
+license texts are in `licenses/`.
+
+- M PLUS Rounded 1c – Copyright 2016 The Rounded M+ Project Authors (https://github.com/google/fonts/tree/main/ofl/mplusrounded1c)
+- Source Sans 3 – Copyright 2010–2020 Adobe (https://github.com/adobe-fonts/source-sans)
+- Selawik – Copyright 2015 Microsoft Corporation (https://github.com/microsoft/Selawik)
+- Zen Maru Gothic – Copyright 2021 The Zen Project Authors (https://github.com/googlefonts/zen-marugothic)
+
+Selawik and Source Sans 3 carry Reserved Font Names ("Selawik", "Source"): as modified (subset) versions they are
+embedded under other names – "GG XSans" (from Selawik) and "GG PSans" (from Source Sans 3). The consoles' own fonts are
+not included.
